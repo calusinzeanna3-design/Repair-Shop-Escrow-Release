@@ -20,4 +20,4 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .agents
-.skills-lock.json
+skills-lock.json
