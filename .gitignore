@@ -1,0 +1,21 @@
+# Rust / Soroban
+/target
+**/*.rs.bk
+Cargo.lock
+
+# Node / Next.js (the web/ app keeps its own .gitignore too)
+node_modules
+.next
+*.log
+
+# Local env files (never commit secrets)
+.env
+.env.local
+.env*.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
