@@ -1,10 +1,9 @@
-# Deploy the savings-goal contract to Stellar testnet, then write the contract
+# Deploy the repair escrow contract to Stellar testnet, then write the contract
 # ID into web\.env.local so the frontend can call it.
 #
-# Prereqs (from the workshop setup checklist): Rust + the wasm32v1-none target,
-# and the Stellar CLI (run `stellar --version` to confirm).
+# Prereqs: Rust + the wasm32v1-none target, and the Stellar CLI.
 #
-# Usage:  .\scripts\deploy.ps1 [identityName]   (default identity: workshop)
+# Usage: .\scripts\deploy.ps1 [identityName]   (default identity: workshop)
 
 param([string]$Identity = "workshop")
 
@@ -16,31 +15,32 @@ $EnvFile = Join-Path $Root "web\.env.local"
 
 Set-Location $Root
 
-# 1. Ensure a funded testnet identity exists
+# 1. Ensure a funded testnet identity exists.
 $keys = stellar keys ls
 if ($keys -notcontains $Identity) {
-  Write-Host "Creating + funding testnet identity '$Identity'..."
+  Write-Host "Creating and funding testnet identity '$Identity'..."
   stellar keys generate $Identity --network $Network --fund
 }
 
-# 2. Build the contract to wasm
+# 2. Build the contract to wasm.
 Write-Host "Building contract..."
 stellar contract build
 
-# 3. Deploy to testnet (returns the contract ID, starting with C...)
+# 3. Deploy to testnet.
 Write-Host "Deploying to $Network..."
 $ContractId = (stellar contract deploy --wasm $Wasm --source-account $Identity --network $Network).Trim()
 Write-Host "Deployed contract ID: $ContractId"
 
-# 4. Initialise the savings goal (target = 1000). Ignore error if already initialised.
-Write-Host "Initialising savings goal (target 1000)..."
+# 4. Initialise the repair escrow admin. Ignore error if already initialised.
+$Admin = (stellar keys address $Identity).Trim()
+Write-Host "Initialising repair escrow admin: $Admin"
 try {
-  stellar contract invoke --id $ContractId --source-account $Identity --network $Network -- init --target 1000
+  stellar contract invoke --id $ContractId --source-account $Identity --network $Network -- init --admin $Admin
 } catch {
-  Write-Host "(init skipped — contract may already be initialised)"
+  Write-Host "(init skipped - contract may already be initialised)"
 }
 
-# 5. Write NEXT_PUBLIC_CONTRACT_ID into web\.env.local
+# 5. Write NEXT_PUBLIC_CONTRACT_ID into web\.env.local.
 if (Test-Path $EnvFile) {
   (Get-Content $EnvFile) | Where-Object { $_ -notmatch '^NEXT_PUBLIC_CONTRACT_ID=' } | Set-Content $EnvFile
 }

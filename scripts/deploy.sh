@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy the savings-goal contract to Stellar testnet, then write the contract
+# Deploy the repair escrow contract to Stellar testnet, then write the contract
 # ID into web/.env.local so the frontend can call it.
 #
 # Prereqs (from the workshop setup checklist): Rust + the wasm32v1-none target,
@@ -34,13 +34,14 @@ CONTRACT_ID=$(stellar contract deploy \
   --network "$NETWORK")
 echo "Deployed contract ID: $CONTRACT_ID"
 
-# 4. Initialise the savings goal (target = 1000). Ignore error if already initialised.
-echo "Initialising savings goal (target 1000)..."
+# 4. Initialise the repair escrow admin. Ignore error if already initialised.
+ADMIN=$(stellar keys address "$IDENTITY")
+echo "Initialising repair escrow admin: $ADMIN"
 stellar contract invoke \
   --id "$CONTRACT_ID" \
   --source-account "$IDENTITY" \
   --network "$NETWORK" \
-  -- init --target 1000 || echo "(init skipped — contract may already be initialised)"
+  -- init --admin "$ADMIN" || echo "(init skipped - contract may already be initialised)"
 
 # 5. Write NEXT_PUBLIC_CONTRACT_ID into web/.env.local
 if [ -f "$ENV_FILE" ]; then
